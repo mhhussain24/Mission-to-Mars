@@ -1,4 +1,5 @@
 # Import Splinter, BeautifulSoup, and Pandas
+import soupsieve
 from splinter import Browser
 from bs4 import BeautifulSoup as soup
 import pandas as pd
@@ -19,6 +20,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
+        "hemispheres": hemisphere(browser),
         "last_modified": dt.datetime.now()
     }
 
@@ -31,7 +33,7 @@ def mars_news(browser):
 
     # Scrape Mars News
     # Visit the mars nasa news site
-    url = 'https://data-class-mars.s3.amazonaws.com/Mars/index.html'
+    url = 'https://redplanetscience.com/'
     browser.visit(url)
 
     # Optional delay for loading the page
@@ -57,7 +59,7 @@ def mars_news(browser):
 
 def featured_image(browser):
     # Visit URL
-    url = 'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/index.html'
+    url = 'https://spaceimages-mars.com'
     browser.visit(url)
 
     # Find and click the full image button
@@ -77,7 +79,7 @@ def featured_image(browser):
         return None
 
     # Use the base url to create an absolute url
-    img_url = f'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/{img_url_rel}'
+    img_url = f'https://spaceimages-mars.com/{img_url_rel}'
 
     return img_url
 
@@ -96,6 +98,39 @@ def mars_facts():
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+def hemisphere(browser):
+    url='https://marshemispheres.com/'
+    browser.visit(url)
+
+
+    hemisphere_image_urls = []
+
+    #imgs_links= browser.find_by_css("a.product-item img")
+
+    for x in range(4):
+        hemisphere={}
+
+        # Find elements going to click link 
+        browser.find_by_css("a.product-item img")[x].click()
+        html_s = soup(browser.html, "html.parser")
+
+
+        # Find sample Image link
+        sample_img= html_s.find("a",text="Sample").get("href")
+        hemisphere['img_url']=url+sample_img
+
+        # Get hemisphere Title
+        #hemisphere['title']=browser.find_by_css("h2.title")
+
+
+        #Add Objects to hemisphere_img_urls list
+        hemisphere_image_urls.append(hemisphere)
+
+        # Go Back
+        browser.back()
+    return hemisphere_image_urls
+
 
 if __name__ == "__main__":
 
